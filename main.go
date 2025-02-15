@@ -2,14 +2,25 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"os"
+	"sort"
 	"strconv"
-	"time"
 )
+
+var (
+	apiKey string
+	port   int
+)
+
+func initFlags() {
+	// define and parse cli params
+	flag.IntVar(&port, "port", 8080, "Port to listen on")
+	flag.StringVar(&apiKey, "apikey", "", "AlphaVantage API key")
+}
 
 type DailyData struct {
 	Open   string `json:"1. open"`
@@ -25,21 +36,24 @@ type StockResponse struct {
 }
 
 type StockMetaData struct {
-	Symbol          string  `json:"2. Symbol"`
-	NDays           int     `json:"3. NDays"`
-	AvgClosingPrice float64 `json:"4. Avg Closing Price"`
+	Symbol          string    `json:"1. Symbol"`
+	NDays           int       `json:"2. NDays"`
+	ClosingPrices   []float64 `json:"3. Closing Prices"`
+	AvgClosingPrice float64   `json:"4. Average Closing Price for last NDays"`
 }
 
 func main() {
-	apiKey := os.Getenv("API_KEY") // Retrieve API key from environment variable
-
+	// parse CLI params
+	initFlags()
+	flag.Parse()
+	httpPort := ":" + strconv.Itoa(port)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/stockticker/{symbol}/lastndays/{ndays}", func(w http.ResponseWriter, r *http.Request) {
 		handleStockRequest(w, r, apiKey)
 	})
 	log.Print("starting server on :8080")
 
-	err := http.ListenAndServe(":8080", mux)
+	err := http.ListenAndServe(httpPort, mux)
 	log.Fatal(err)
 }
 
@@ -97,16 +111,27 @@ func handleStockRequest(w http.ResponseWriter, r *http.Request, apiKey string) {
 
 	closingPrices := make([]float64, 0, ndays)
 	count := 0
-	currentTime := time.Now()
 
-	for i := 0; i < ndays; i++ {
-		date := currentTime.AddDate(0, 0, -i)
-		dateStr := date.Format("2006-01-02")
+	// 1. Collect and sort the dates
+	var dates []string
+	for dateStr := range timeSeries {
+		dates = append(dates, dateStr)
+	}
+
+	sort.Sort(sort.Reverse(sort.StringSlice(dates))) // Sort in descending order (most recent first)
+
+	// 2. Iterate over the sorted dates
+	for _, dateStr := range dates {
+		if count >= ndays {
+			break // Stop when ndays data points are collected
+		}
+
+		fmt.Println("Processing date from API:", dateStr) // Debugging
 
 		dailyDataInterface, ok := timeSeries[dateStr].(map[string]interface{})
-		fmt.Println(dailyDataInterface)
 		if !ok {
-			continue // Skip to the next day
+			fmt.Println("Data not found for:", dateStr) // Debugging
+			continue                                    // Skip if data is not found for date
 		}
 
 		dailyData := DailyData{}
@@ -116,12 +141,12 @@ func handleStockRequest(w http.ResponseWriter, r *http.Request, apiKey string) {
 
 		closePrice, err := strconv.ParseFloat(dailyData.Close, 64)
 		if err != nil {
+			fmt.Println("Parse Float Error:", err)
 			http.Error(w, "Error parsing closing price", http.StatusInternalServerError)
 			return
 		}
 		closingPrices = append(closingPrices, closePrice)
 		count++
-
 	}
 
 	sum := 0.0
@@ -129,12 +154,12 @@ func handleStockRequest(w http.ResponseWriter, r *http.Request, apiKey string) {
 		sum += price
 	}
 
-	avgPrice := 0.0
-	if len(closingPrices) > 0 {
-		avgPrice = sum / float64(len(closingPrices))
-	}
+	average := sum / float64(len(closingPrices))
+	fmt.Printf("no of closing prices %d", len(closingPrices))
+	fmt.Printf("The average closing price is: %.2f\n", average)
 
-	stockResponse.MetaData.AvgClosingPrice = avgPrice
+	stockResponse.MetaData.AvgClosingPrice = average
+	stockResponse.MetaData.ClosingPrices = closingPrices
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(stockResponse)
