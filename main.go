@@ -11,14 +11,6 @@ import (
 	"time"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello World"))
-}
-
-type StockData struct {
-	TimeSeries map[string]DailyData `json:"Time Series (Daily)"`
-}
-
 type DailyData struct {
 	Open   string `json:"1. open"`
 	High   string `json:"2. high"`
