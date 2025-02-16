@@ -6,7 +6,6 @@ This is a simple Go based stock ticker watcher application that retrieves stock 
 
 ```bash
 export API_KEY=<YOUR_API_KEY>
-# Replace `<YOUR_API_KEY>` with your actual [AlphaVantage](https://www.alphavantage.co/support/#api-key) API key.
 
 # Run as binary
 go build -o stock-ticker-watcher
@@ -18,6 +17,8 @@ docker run -p 8080:8080 stock-ticker-watcher --apikey $API_KEY
 # Or
 docker-compose --build up
 ```
+
+**Note:** Replace `<YOUR_API_KEY>` with your actual [AlphaVantage](https://www.alphavantage.co/support/#api-key) API key.
 
 ## Usage
 
