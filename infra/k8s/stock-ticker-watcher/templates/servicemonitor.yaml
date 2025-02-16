@@ -1,0 +1,18 @@
+{{- if .Values.exposePrometheusMetrics }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "stock-ticker-watcher.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "stock-ticker-watcher.labels" . | nindent 4 }}
+    serviceMonitorSelector: prometheus  # This label is used by Prometheus Operator to discover ServiceMonitors
+spec:
+  selector:
+    matchLabels:
+      {{- include "stock-ticker-watcher.labels" . | nindent 6 }} # Label selector to match your service
+  endpoints:
+  - port: {{ .Values.service.port }} # The port name on your service that exposes metrics
+    path: /metrics # The path to the metrics endpoint
+    interval: 15s # Scrape interval (adjust as needed)
+{{- end }}
