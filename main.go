@@ -51,10 +51,23 @@ func main() {
 	mux.HandleFunc("/stockticker/{symbol}/lastndays/{ndays}", func(w http.ResponseWriter, r *http.Request) {
 		handleStockRequest(w, r, apiKey)
 	})
-	log.Print("starting server on :8080")
+	// Add health check handler
+	mux.HandleFunc("/healthz", healthCheckHandler) // New health check endpoint
+
+	log.Printf("starting server on %s", httpPort)
 
 	err := http.ListenAndServe(httpPort, mux)
 	log.Fatal(err)
+}
+
+func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintln(w, "OK") // Simple "OK" response
+		return
+	}
+	w.WriteHeader(http.StatusMethodNotAllowed)
+	fmt.Fprintln(w, "Method Not Allowed")
 }
 
 func handleStockRequest(w http.ResponseWriter, r *http.Request, apiKey string) {
