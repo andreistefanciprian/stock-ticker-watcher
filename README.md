@@ -30,6 +30,15 @@ docker build -t stock-ticker-watcher . -f infra/Dockerfile
 docker run -p 8080:8080 stock-ticker-watcher --apikey $API_KEY
 # Or
 docker-compose --build up
+
+# Run as k8s deployment
+kubectl create secret generic api-key-secret --from-literal=apiKey=$API_KEY
+helm install stock-ticker-watcher infra/k8s/stock-ticker-watcher
+k port-forward svc/stock-ticker-watcher 8080:8080
+# Check logs
+k logs -l app.kubernetes.io/name=stock-ticker-watcher -f
+# Uninstall k8s deployment
+helm uninstall stock-ticker-watcher
 ```
 
 **Note:** Replace `<YOUR_API_KEY>` with your actual [AlphaVantage](https://www.alphavantage.co/support/#api-key) API key.
