@@ -60,6 +60,13 @@ http://localhost:8080/stockticker/UBER/lastndays/20
 
 ## Prometheus Metrics
 
-This application exposes Prometheus metrics at the `/metrics` endpoint.  These metrics can be scraped by a Prometheus server to monitor the application's performance and behavior.
+This application exposes Prometheus metrics at the `/metrics` endpoint.  These metrics can be scraped by a Prometheus server to monitor the application's performance and behavior:
 
-![Prometheus metrics/Users/stefanandrei/Desktop/prometheus_metrics.png](./prometheus_metrics.png "Prometheus metrics exposed at /metrics")
+```
+# HELP stock_requests_total Total number of stock requests
+# TYPE stock_requests_total counter
+stock_requests_total{ndays="ABNB",symbol="10"} 3
+stock_requests_total{ndays="ABNB",symbol="50"} 1
+stock_requests_total{ndays="GOOG",symbol="10"} 1
+stock_requests_total{ndays="MSFT",symbol="10"} 1
+```
