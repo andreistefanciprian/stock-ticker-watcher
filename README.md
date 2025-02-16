@@ -15,6 +15,8 @@ go build -o stock-ticker-watcher
 # Run as container
 docker build -t stock-ticker-watcher . -f infra/Dockerfile
 docker run -p 8080:8080 stock-ticker-watcher --apikey $API_KEY
+# Or
+docker-compose --build up
 ```
 
 ## Usage
