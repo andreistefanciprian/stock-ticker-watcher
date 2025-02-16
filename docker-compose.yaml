@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+
+  stock-ticker-watcher:
+    container_name: stock-ticker-watcher
+    image: andreistefanciprian/stock-ticker-watcher:latest
+    build: 
+      dockerfile: ./infra/Dockerfile
+      context: .
+    ports: 
+      - 8080:8080
+    restart: on-failure
+    command: ["--apikey", "$API_KEY"]
+
+
+
