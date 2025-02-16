@@ -21,10 +21,6 @@ To check the stock price for UBER for the last 20 days, use the following URL: `
 ```bash
 export API_KEY=<YOUR_API_KEY>
 
-# Run as binary
-go build -o stock-ticker-watcher
-./stock-ticker-watcher --apikey $API_KEY
-
 # Run as container
 docker build -t stock-ticker-watcher . -f infra/Dockerfile
 docker run -p 8080:8080 stock-ticker-watcher --apikey $API_KEY
@@ -61,3 +57,9 @@ To check the stock price for UBER for the last 20 days:
 ```
 http://localhost:8080/stockticker/UBER/lastndays/20
 ```
+
+## Prometheus Metrics
+
+This application exposes Prometheus metrics at the `/metrics` endpoint.  These metrics can be scraped by a Prometheus server to monitor the application's performance and behavior.
+
+![Prometheus metrics/Users/stefanandrei/Desktop/prometheus_metrics.png](./prometheus_metrics.png "Prometheus metrics exposed at /metrics")

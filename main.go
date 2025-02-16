@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -22,26 +24,6 @@ func initFlags() {
 	flag.StringVar(&apiKey, "apikey", "", "AlphaVantage API key")
 }
 
-type DailyData struct {
-	Open   string `json:"1. open"`
-	High   string `json:"2. high"`
-	Low    string `json:"3. low"`
-	Close  string `json:"4. close"`
-	Volume string `json:"5. volume"`
-}
-
-type StockResponse struct {
-	MetaData        StockMetaData        `json:"Meta Data"`
-	TimeSeriesDaily map[string]DailyData `json:"Time Series (Daily)"`
-}
-
-type StockMetaData struct {
-	Symbol          string    `json:"1. Symbol"`
-	NDays           int       `json:"2. NDays"`
-	ClosingPrices   []float64 `json:"3. Closing Prices"`
-	AvgClosingPrice float64   `json:"4. Average Closing Price for last NDays"`
-}
-
 func main() {
 	// parse CLI params
 	initFlags()
@@ -51,8 +33,9 @@ func main() {
 	mux.HandleFunc("/stockticker/{symbol}/lastndays/{ndays}", func(w http.ResponseWriter, r *http.Request) {
 		handleStockRequest(w, r, apiKey)
 	})
-	// Add health check handler
-	mux.HandleFunc("/healthz", healthCheckHandler) // New health check endpoint
+
+	mux.HandleFunc("/healthz", healthCheckHandler) // Health check endpoint
+	mux.Handle("/metrics", promhttp.Handler())     // Metrics endpoint
 
 	log.Printf("starting server on %s", httpPort)
 
@@ -94,6 +77,8 @@ func handleStockRequest(w http.ResponseWriter, r *http.Request, apiKey string) {
 		return
 	}
 	defer resp.Body.Close()
+
+	RecordRequest(symbol, ndaysStr) // Record the request
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

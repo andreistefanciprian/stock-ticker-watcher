@@ -5,12 +5,12 @@ WORKDIR /app
 
 COPY go.* ./
 RUN go mod download
-COPY main.go .
+COPY *.go .
 
 ENV GOOS=linux \
     GOARCH=amd64
 
-RUN go build -a -o stock-ticker-watcher
+RUN go build -a -o stock-ticker-watcher .
 
 # Deploy stage
 FROM gcr.io/distroless/base-debian12
