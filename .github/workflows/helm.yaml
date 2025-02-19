@@ -45,6 +45,7 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
     
       - name: Pushing Helm Chart
+        needs: generate-build-id
         run: |
           REPO_OWNER=`echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]'`
           cd infra/k8s/stock-ticker-watcher
