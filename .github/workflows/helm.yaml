@@ -44,6 +44,7 @@ jobs:
 
   push-helm-chart:
     name: Push Helm Chart
+    needs: generate-build-id
     timeout-minutes: 90
     runs-on: ubuntu-latest
     steps:
@@ -54,7 +55,6 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
     
       - name: Pushing Helm Chart
-        needs: generate-build-id
         run: |
           REPO_OWNER=`echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]'`
           cd infra/k8s/stock-ticker-watcher
