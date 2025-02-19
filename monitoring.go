@@ -17,5 +17,5 @@ func init() {
 }
 
 func RecordRequest(symbol string, ndays string) {
-	totalRequests.WithLabelValues(symbol, ndays).Inc()
+	totalRequests.WithLabelValues(ndays, symbol).Inc()
 }

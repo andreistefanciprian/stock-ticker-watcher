@@ -65,8 +65,9 @@ This application exposes Prometheus metrics at the `/metrics` endpoint.  These m
 ```
 # HELP stock_requests_total Total number of stock requests
 # TYPE stock_requests_total counter
-stock_requests_total{ndays="ABNB",symbol="10"} 3
-stock_requests_total{ndays="ABNB",symbol="50"} 1
-stock_requests_total{ndays="GOOG",symbol="10"} 1
-stock_requests_total{ndays="MSFT",symbol="10"} 1
+stock_requests_total{ndays="10",symbol="ABNB"} 11
+stock_requests_total{ndays="1000",symbol="MSFT"} 1
+stock_requests_total{ndays="100",symbol="MSFT"} 1
+stock_requests_total{ndays="20",symbol="ABNB"} 2
+stock_requests_total{ndays="20",symbol="MSFT"} 1
 ```
