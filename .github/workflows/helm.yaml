@@ -55,13 +55,11 @@ jobs:
       - name: Login to container registry
         run: |
           REPO_OWNER=`echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]'`
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
     
       - name: Pushing Helm Chart
         run: |
           REPO_OWNER=`echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]'`
           cd infra/k8s
-          ls
           helm package stock-ticker-watcher --version ${{ needs.generate-build-id.outputs.CHART_VERSION }}
-          ls
           helm push stock-ticker-watcher-${{ needs.generate-build-id.outputs.CHART_VERSION }}.tgz oci://ghcr.io/${REPO_OWNER}/charts
