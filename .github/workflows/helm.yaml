@@ -17,6 +17,15 @@ on:
   workflow_dispatch:
 
 jobs:
+  lint-helm-chart:
+    name: Lint Helm Chart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Linting Helm Chart
+        run: |
+          helm lint infra/k8s/stock-ticker-watcher/
+          
   generate-build-id:
     runs-on: ubuntu-latest
     outputs:
