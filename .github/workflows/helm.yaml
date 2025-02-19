@@ -1,0 +1,65 @@
+name: Helm
+
+on:
+  push:
+    tags:
+      - '*'
+    branches:
+      - 'main'
+    paths:
+      - 'infra/k8s/stock-ticker-watcher/**'
+      - '.github/workflows/helm.yaml'
+  pull_request:
+    branches: [ 'main' ]
+    paths:
+      - 'infra/k8s/stock-ticker-watcher/**'
+      - '.github/workflows/helm.yaml'
+  workflow_dispatch:
+
+jobs:
+  lint-helm-chart:
+    name: Lint Helm Chart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Linting Helm Chart
+        run: |
+          helm lint infra/k8s/stock-ticker-watcher/
+          
+  generate-build-id:
+    runs-on: ubuntu-latest
+    outputs:
+      CHART_VERSION: "v0.1.0-${{ steps.prep.outputs.BUILD_ID }}"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate build ID
+        id: prep
+        run: |
+          branch=${GITHUB_REF##*/}
+          sha=${GITHUB_SHA::8}
+          ts=$(date +%s)
+          echo "BUILD_ID=${branch}-${sha}-${ts}" >> $GITHUB_OUTPUT
+
+  push-helm-chart:
+    permissions:
+      contents: read
+      packages: write
+    name: Push Helm Chart
+    needs: generate-build-id
+    timeout-minutes: 90
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to container registry
+        run: |
+          REPO_OWNER=`echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]'`
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+    
+      - name: Pushing Helm Chart
+        run: |
+          REPO_OWNER=`echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]'`
+          cd infra/k8s
+          helm package stock-ticker-watcher --version ${{ needs.generate-build-id.outputs.CHART_VERSION }}
+          helm push stock-ticker-watcher-${{ needs.generate-build-id.outputs.CHART_VERSION }}.tgz oci://ghcr.io/${REPO_OWNER}/charts
