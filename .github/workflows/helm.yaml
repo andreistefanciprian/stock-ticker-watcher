@@ -58,5 +58,7 @@ jobs:
         run: |
           REPO_OWNER=`echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]'`
           cd infra/k8s/stock-ticker-watcher
+          ls
           helm package stock-ticker-watcher --version ${{ needs.generate-build-id.outputs.CHART_VERSION }}
+          ls
           helm push stock-ticker-watcher-${{ needs.generate-build-id.outputs.CHART_VERSION }}.tgz oci://ghcr.io/${REPO_OWNER}/charts
