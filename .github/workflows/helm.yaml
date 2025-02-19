@@ -43,6 +43,9 @@ jobs:
           echo "BUILD_ID=${branch}-${sha}-${ts}" >> $GITHUB_OUTPUT
 
   push-helm-chart:
+    permissions:
+      contents: read
+      packages: write
     name: Push Helm Chart
     needs: generate-build-id
     timeout-minutes: 90
