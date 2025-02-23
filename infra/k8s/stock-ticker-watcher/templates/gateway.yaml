@@ -1,0 +1,42 @@
+{{- if .Values.istioGateway.enabled -}}
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: {{ include "stock-ticker-watcher.fullname" . }}
+  labels:
+    {{- include "stock-ticker-watcher.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: istio-ingressgateway # The selector matches the ingress gateway pod labels.
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: {{ include "stock-ticker-watcher.fullname" . }}-tls
+    hosts:
+    - '{{ include "stock-ticker-watcher.fullname" . }}.example.com'
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ include "stock-ticker-watcher.fullname" . }}
+  labels:
+    {{- include "stock-ticker-watcher.labels" . | nindent 4 }}
+spec:
+  hosts:
+  - '{{ include "stock-ticker-watcher.fullname" . }}.example.com'
+  gateways:
+  - {{ include "stock-ticker-watcher.fullname" . }}
+  http:
+  - match:
+    - uri:
+        prefix: /stockticker/
+    route:
+    - destination:
+        port:
+          number: {{ .Values.service.port }}
+        host: {{ include "stock-ticker-watcher.fullname" . }}
+{{- end }}

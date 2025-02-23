@@ -12,7 +12,7 @@ image:
 
 imagePullSecrets: []
 nameOverride: ""
-fullnameOverride: ""
+fullnameOverride: "stock-ticker-watcher"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -84,3 +84,15 @@ affinity: {}
 apiKeySecret: "api-key-secret"
 
 exposePrometheusMetrics: false # Enable ServiceMonitor for Prometheus
+
+# Expose service externally via Istio Gateway
+istioGateway:
+  enabled: false
+
+# Configure certificate
+# Configure GoogleCASClusterIssuerCertificate or the selfSigned Certificate
+certManager:
+  enabled: false
+  googleCASClusterIssuer:
+    enabled: false
+    name: googlecasclusterissuer
