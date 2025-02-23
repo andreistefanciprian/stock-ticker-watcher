@@ -1,0 +1,42 @@
+{{- if .Values.certManager.enabled }}
+{{- if not .Values.certManager.googleCASClusterIssuer.enabled -}}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "stock-ticker-watcher.fullname" . }}
+  labels:
+    {{- include "stock-ticker-watcher.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+{{- end }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "stock-ticker-watcher.fullname" . }}
+  labels:
+    {{- include "stock-ticker-watcher.labels" . | nindent 4 }}
+  annotations:
+    cert-manager.io/allow-direct-injection: "true"
+spec:
+  commonName: {{ include "stock-ticker-watcher.fullname" . }}.{{ .Release.Namespace }}.svc
+  dnsNames:
+  - {{ include "stock-ticker-watcher.fullname" . }}.example.com
+  - {{ include "stock-ticker-watcher.fullname" . }}.{{ .Release.Namespace }}.svc
+  - {{ include "stock-ticker-watcher.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+  duration: 2160h0m0s
+  {{- if .Values.certManager.googleCASClusterIssuer.enabled }}
+  issuerRef:
+    group: cas-issuer.jetstack.io
+    kind: GoogleCASClusterIssuer
+    name: {{ .Values.certManager.googleCASClusterIssuer.name }}
+  {{- else }}
+  issuerRef:
+    kind: Issuer
+    name: {{ include "stock-ticker-watcher.fullname" . }}
+  {{- end }}
+  privateKey:
+    rotationPolicy: Always
+  renewBefore: 1080h0m0s
+  secretName: {{ include "stock-ticker-watcher.fullname" . }}-tls
+{{- end }}
