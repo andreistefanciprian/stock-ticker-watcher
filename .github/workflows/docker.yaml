@@ -58,7 +58,7 @@ jobs:
 
   push-docker-image:
     needs: [generate-build-id, unit-tests]
-    uses: andreistefanciprian/gh-reusable-workflows/.github/workflows/build_and_push_docker_image_to_dockerhub.yaml@improve_dockerhub_workflow
+    uses: andreistefanciprian/gh-reusable-workflows/.github/workflows/build_and_push_docker_image_to_dockerhub.yaml@main
     with:
       image_name: ${{ github.repository }}
       image_tag: ${{ needs.generate-build-id.outputs.BUILD_ID }}
