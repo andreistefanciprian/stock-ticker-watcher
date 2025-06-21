@@ -62,4 +62,5 @@ jobs:
     with:
       image_name: ${{ github.repository }}
       image_tag: ${{ needs.generate-build-id.outputs.BUILD_ID }}
+      dockerhub_username: andreistefanciprian
     secrets: inherit
