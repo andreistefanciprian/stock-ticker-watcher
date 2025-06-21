@@ -17,7 +17,10 @@ on:
       - '**.go'
       - '.github/workflows/docker.yaml'
   workflow_dispatch:
-
+permissions:
+  id-token: write
+  attestations: write
+  
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
